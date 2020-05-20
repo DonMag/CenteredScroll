@@ -9,48 +9,49 @@
 import UIKit
 
 class FirstViewController: UIViewController {
-
+	
+	// we'll change the constant on this constraint to move the
+	//	bottom of the scroll view Up / Down with the keyboard
+	@IBOutlet var scrollViewBottomConstraint: NSLayoutConstraint!
+	
 	override func viewDidLoad() {
 		super.viewDidLoad()
-		// Do any additional setup after loading the view.
-	}
-
-
-}
-
-class DashedBorderView: UIView {
-	
-	// simple view with dashed border
-	
-	var shapeLayer: CAShapeLayer!
-	
-	override class var layerClass: AnyClass {
-		return CAShapeLayer.self
 	}
 	
-	override init(frame: CGRect) {
-		super.init(frame: frame)
-		commonInit()
+	override func viewWillAppear(_ animated: Bool) {
+		super.viewWillAppear(animated)
+		NotificationCenter.default.addObserver(self, selector: #selector(self.handleKeyboardNotification(_:)), name: UIResponder.keyboardWillShowNotification, object: nil)
+		NotificationCenter.default.addObserver(self, selector: #selector(self.handleKeyboardNotification(_:)), name: UIResponder.keyboardWillHideNotification, object: nil)
+	}
+	override func viewWillDisappear(_ animated: Bool) {
+		NotificationCenter.default.removeObserver(self)
 	}
 	
-	required init?(coder: NSCoder) {
-		super.init(coder: coder)
-		commonInit()
-	}
-	
-	func commonInit() -> Void {
+	@objc func handleKeyboardNotification(_ notification: Notification) {
 		
-		shapeLayer = self.layer as? CAShapeLayer
-		shapeLayer.fillColor = UIColor.clear.cgColor
-		shapeLayer.strokeColor = UIColor(red: 1.0, green: 0.25, blue: 0.25, alpha: 1.0).cgColor
-		shapeLayer.lineWidth = 1.0
-		shapeLayer.lineDashPattern = [8,8]
+		guard let keyboardRect = (notification.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? NSValue)?.cgRectValue else{
+			return
+		}
+		
+		var h = keyboardRect.height
+		if let v = self.tabBarController?.tabBar {
+			h -= v.frame.height
+		}
+		
+		let isKeyboardShowing = notification.name == UIResponder.keyboardWillShowNotification
+		
+		scrollViewBottomConstraint?.constant = isKeyboardShowing ? -h : 0
+		
+		UIView.animate(withDuration: 0.5, animations: { () -> Void in
+			self.view.layoutIfNeeded()
+		})
 		
 	}
 	
-	override func layoutSubviews() {
-		super.layoutSubviews()
-		print(NSStringFromClass(type(of: self)), #function, bounds)
-		shapeLayer.path = UIBezierPath(rect: bounds).cgPath
+	@IBAction func loginTapped(_ sender: Any) {
+		// just dismissing the keyboard for now
+		view.endEditing(true)
 	}
+	
 }
+
