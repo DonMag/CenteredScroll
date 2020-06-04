@@ -65,6 +65,11 @@ class FirstViewController: UIViewController, UITextViewDelegate, UITextFieldDele
 	
 	@IBOutlet var emailViewTopConstraint: NSLayoutConstraint!
 	
+	var textViewMaxHeight: CGFloat = 120
+	var savedKbHeight: CGFloat = 0
+	
+	var textViewBottomToButtonBottom: CGFloat = 0
+	
 	lazy var editViews: [UIView] = [emailTextField, passwordField, textView]
 	
 	override func viewDidLoad() {
@@ -89,7 +94,9 @@ class FirstViewController: UIViewController, UITextViewDelegate, UITextFieldDele
 	
 	override func viewDidLayoutSubviews() {
 		super.viewDidLayoutSubviews()
-
+		
+		textViewBottomToButtonBottom = loginButton.frame.maxY - textView.frame.maxY
+		
 		// if not actively editing, adjust views to vertically centered in scroll view
 		//	with minimum top space of 8.0
 		let activeField: UIView? = editViews.first { $0.isFirstResponder }
@@ -126,9 +133,11 @@ class FirstViewController: UIViewController, UITextViewDelegate, UITextFieldDele
 		scrollView.scrollIndicatorInsets = contentInset
 		
 		if textView.isFirstResponder {
-			let fr = textView.frame
+			let fr = loginButton.frame // textView.frame
 			scrollView.scrollRectToVisible(fr, animated: false)
 		}
+		
+		savedKbHeight = kbSize.height
 		
 	}
 	
@@ -136,6 +145,25 @@ class FirstViewController: UIViewController, UITextViewDelegate, UITextFieldDele
 		let contentInset:UIEdgeInsets = UIEdgeInsets.zero
 		scrollView.contentInset = contentInset
 		scrollView.scrollIndicatorInsets = contentInset
+	}
+	
+	func textViewDidChange(_ textView: UITextView) {
+		
+		let estimatedSize = textView.sizeThatFits(textView.frame.size)
+		
+		textView.isScrollEnabled = estimatedSize.height > textViewMaxHeight
+		
+		if !textView.isScrollEnabled {
+			let maxBottom = self.view.frame.height - self.savedKbHeight
+			var r = self.textView.frame
+			r.size.height = estimatedSize.height
+			r.size.height += textViewBottomToButtonBottom
+			let tvBottom = self.scrollView.convert(r, to: self.view).maxX
+			if tvBottom > maxBottom {
+				self.scrollView.scrollRectToVisible(r, animated: false)
+			}
+		}
+		
 	}
 	
 }

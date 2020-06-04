@@ -22,7 +22,8 @@ class SecondViewController: UIViewController, UITextViewDelegate, UITextFieldDel
 	@IBOutlet var emailViewTopConstraint: NSLayoutConstraint!
 	
 	var textViewMaxHeight: CGFloat = 120
-	
+	var savedKbHeight: CGFloat = 0
+
 	lazy var editViews: [UIView] = [emailTextField, passwordField, textView]
 	
 	override func viewDidLoad() {
@@ -97,10 +98,6 @@ class SecondViewController: UIViewController, UITextViewDelegate, UITextFieldDel
 		scrollView.contentInset = contentInset
 		scrollView.scrollIndicatorInsets = contentInset
 	}
-	
-	var didExpandTextView: Bool = false
-	var savedKbHeight: CGFloat = 0
-	var numberOfLines: Int = 0
 	
 	func textViewDidChange(_ textView: UITextView) {
 		
