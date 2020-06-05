@@ -98,12 +98,13 @@ class FirstViewController: UIViewController, UITextViewDelegate, UITextFieldDele
 		textViewBottomToButtonBottom = loginButton.frame.maxY - textView.frame.maxY
 		
 		// if not actively editing, adjust views to vertically centered in scroll view
-		//	with minimum top space of 8.0
+		//	with minimum top space of 0.0
 		let activeField: UIView? = editViews.first { $0.isFirstResponder }
 		if activeField == nil {
+			print("centering")
 			let contentHeight = (loginButton.frame.maxY - emailView.frame.minY)
 			let h = (scrollView.frame.height - contentHeight) * 0.5
-			emailViewTopConstraint.constant = max(8.0, h)
+			emailViewTopConstraint.constant = max(0.0, h)
 		}
 		
 	}
@@ -151,18 +152,20 @@ class FirstViewController: UIViewController, UITextViewDelegate, UITextFieldDele
 		
 		let estimatedSize = textView.sizeThatFits(textView.frame.size)
 		
-		textView.isScrollEnabled = estimatedSize.height > textViewMaxHeight
-		
 		if !textView.isScrollEnabled {
 			let maxBottom = self.view.frame.height - self.savedKbHeight
 			var r = self.textView.frame
-			r.size.height = estimatedSize.height
+			// use minimum of textViewMaxHeight, estimatedSize.height
+			r.size.height =  min(textViewMaxHeight, estimatedSize.height)
 			r.size.height += textViewBottomToButtonBottom
 			let tvBottom = self.scrollView.convert(r, to: self.view).maxX
 			if tvBottom > maxBottom {
 				self.scrollView.scrollRectToVisible(r, animated: false)
 			}
 		}
+		
+		// move this from above
+		textView.isScrollEnabled = estimatedSize.height > textViewMaxHeight
 		
 	}
 	
